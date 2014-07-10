@@ -144,7 +144,7 @@ Ext.Boot.loadSync([
                         ${build.slice.options}
                         -image=${build.capture.png}
                         -manifest=${build.capture.json}
-                        -out=${build.resources.dir}
+                        -out=${build.out.slicer.path}
             ]]>
         </x-sencha-command>
     </target>

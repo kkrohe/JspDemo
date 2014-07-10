@@ -214,7 +214,7 @@ this file in most cases.
     -->
     <target name="-before-clean"/>
     <target name="-clean">
-        <delete dir="${app.outputDir.base}"/>
+        <delete dir="${app.output.base}"/>
         <delete dir="${build.temp.dir}"/>
     </target>
     <target name="-after-clean"/>

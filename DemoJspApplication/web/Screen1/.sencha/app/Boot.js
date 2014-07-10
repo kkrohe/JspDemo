@@ -124,6 +124,10 @@ Ext.Boot = (function (emptyFn) {
             //</debug>
             listeners: [],
 
+            Request: Request,
+
+            Entry: Entry,
+
             init: function () {
                 var me = this,
                     scriptEls = doc.getElementsByTagName('script'),
@@ -831,9 +835,9 @@ Ext.Boot = (function (emptyFn) {
                         el.rel = 'stylesheet';
                         me.prop = 'href';
                     } else {
-                        el.type = "text/css";
                         me.prop="textContent";
                     }
+                    el.type = "text/css";
                 } else {
                     tag = tag || "script";
                     el = doc.createElement(tag);
@@ -985,31 +989,35 @@ Ext.Boot = (function (emptyFn) {
 
             if (me.isCss()) {
                 me.preserve = true;
-                el = me.getElement("style");
-                ieMode = ('styleSheet' in el);
+                basePath = key.substring(0, key.lastIndexOf("/") + 1);
+                base = doc.createElement('base');
+                base.href = basePath;
+                if(head.firstChild) {
+                    head.insertBefore(base, head.firstChild);
+                } else {
+                    head.appendChild(base);
+                }
+                // reset the href attribute to cuase IE to pick up the change
+                base.href = base.href;
 
-                if (asset) {
-                    if ('id' in asset) {
-                        el.id = asset.id;
-                    }
-
-                    if ('disabled' in asset) {
-                        el.disabled = asset.disabled;
-                    }
+                if (url) {
+                    content += "\n/*# sourceURL=" + key + " */";
                 }
 
+                // create element after setting base
+                el = me.getElement("style");
+
+                ieMode = ('styleSheet' in el);
+
+                head.appendChild(base);
                 if(ieMode) {
                     head.appendChild(el);
                     el.styleSheet.cssText = content;
                 } else {
-                    basePath = key.substring(0, key.lastIndexOf("/") + 1);
                     el.textContent = content;
-                    base = doc.createElement('base');
-                    base.href = basePath;
-                    head.appendChild(base);
                     head.appendChild(el);
-                    head.removeChild(base);
                 }
+                head.removeChild(base);
 
             } else {
                 // Debugger friendly, file names are still shown even though they're 
@@ -1073,18 +1081,8 @@ Ext.Boot = (function (emptyFn) {
                 }
                 me.loading = true;
 
-                // IE8 - cannot reliably inject css content because there is not way to 
-                // control the base path used to calulate relative resource paths, must use 
-                // a link, not a style element, so cannot inject, but will get load events
-                //
-                // phantomjs / Safari5 - will not get events from the link elements when they have
-                // loaded
-                if (me.isCss() && Boot.hasReadyState) {
-                    me.loadCrossDomain();
-                }
-
-                // for async modes with JS, we have some options 
-                else if (!sync) {
+                // for async modes, we have some options 
+                if (!sync) {
                     // if cross domain, just inject the script tag and let the onload
                     // events drive the progression
                     if(me.isCrossDomain()) {

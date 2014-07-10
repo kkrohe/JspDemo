@@ -1,7 +1,12 @@
 <project name="refresh-impl">
     <import file="bootstrap-impl.xml"/>
-    
-    <target name="-refresh-app-manifest" if="build.enable.appmanifest" depends="-init-app-js-files">
+
+    <target name="-init-refresh" depends="-init-app-js-files">
+        <property name="app.bootstrap.base.path"
+                  value="${build.bootstrap.metadata.dir}"/>
+    </target>
+
+    <target name="-refresh-app-manifest" if="build.enable.appmanifest" depends="-init-refresh">
         <x-compile refid="${compiler.ref.id}">
             <![CDATA[
                 microload
@@ -20,7 +25,7 @@
         </x-compile>
     </target>
     
-    <target name="-refresh-app-bootstrap" unless="build.enable.appmanifest">
+    <target name="-refresh-app-bootstrap" unless="build.enable.appmanifest" depends="-init-refresh">
 
         <!--regenerate class system metadata-->
         <x-bootstrap file="${app.bootstrap.js}"
